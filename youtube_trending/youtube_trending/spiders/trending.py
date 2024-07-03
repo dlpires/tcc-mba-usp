@@ -21,19 +21,22 @@ class TrendingSpider(Spider):
     name = "trending"
     allowed_domains = ["www.youtube.com","youtube.com"]
     start_urls = ["https://www.youtube.com/feed/trending"]
+    base_url = "https://www.youtube.com"
     
     def start_requests(self) -> Iterable[Request]:
         self.driver = webdriver.Firefox()
         self.driver.get(self.start_urls[0])
 
         sel = Selector(text=self.driver.page_source)
-        video_name = sel.xpath('//yt-formatted-string/text()').extract()
-        
-        
+        sleep(3)
+        self.logger.info('Sleeping for 3 seconds.')
+        videos = sel.xpath('//a[@id="thumbnail"]/@href').extract()
 
-        # for book in books:
-        #     url = 'https://books.toscrape.com/'+book
-        #     yield Request(url, callback=self.parse_book)
+        # yield {"videos": videos}
+
+        for video in videos:
+            url = self.base_url + video
+            yield Request(url, callback=self.parse_trendings)
         
         # while True:
         #     try:
@@ -53,23 +56,30 @@ class TrendingSpider(Spider):
         #         self.driver.quit()
         #         break
 
-    def parse(self, response):
-        l = ItemLoader(item=YoutubeTrendingItem(), response=response)
+    def parse_trendings(self, response):
+        sel = Selector(text=self.driver.page_source)
+        video_name = sel.xpath('//yt-formatted-string/text()').extract_first()
 
-        # video_name = response.xpath('//yt-formatted-string/text()').extract()
-        #video_channel_name = response.xpath('//*[@class="tag-item"]/a/text()').extract()
-        #views = response.xpath('//*[@class="tag-item"]/a/text()').extract()
-        #upload_time = response.xpath('//*[@class="tag-item"]/a/text()').extract()
+        yield {"video_name": video_name}
+    
+    
+    # def parse(self, response):
+    #     l = ItemLoader(item=YoutubeTrendingItem(), response=response)
 
-        l.add_value('video_name', video_name)
-        #l.add_value('video_channel_name', video_channel_name)
-        #l.add_value('views', views)
-        #l.add_value('upload_time', upload_time)
+    #     # video_name = response.xpath('//yt-formatted-string/text()').extract()
+    #     #video_channel_name = response.xpath('//*[@class="tag-item"]/a/text()').extract()
+    #     #views = response.xpath('//*[@class="tag-item"]/a/text()').extract()
+    #     #upload_time = response.xpath('//*[@class="tag-item"]/a/text()').extract()
+
+    #     l.add_value('video_name', video_name)
+    #     #l.add_value('video_channel_name', video_channel_name)
+    #     #l.add_value('views', views)
+    #     #l.add_value('upload_time', upload_time)
 
 
-        yield l.load_item()
+    #     yield l.load_item()
         
 
-    def close(self, reason):
-        json_file = max(glob.iglob('*.json'), key=os.path.getctime)
-        os.rename(json_file, "trendings.json")
+    # def close(self, reason):
+    #     json_file = max(glob.iglob('*.json'), key=os.path.getctime)
+    #     os.rename(json_file, "trendings.json")
