@@ -3,6 +3,7 @@ from scrapy.loader import ItemLoader
 import os
 import glob
 import json
+import youtube_trending.shared.utils as utils
 
 # SELENIUM
 from time import sleep
@@ -25,6 +26,7 @@ class TrendingSpider(Spider):
     
     def start_requests(self) -> Iterable[Request]:
         self.driver = webdriver.Firefox()
+        sleep(10)
         self.driver.get(self.start_urls[0])
 
         sel = Selector(text=self.driver.page_source)
@@ -36,6 +38,9 @@ class TrendingSpider(Spider):
 
         for video in videos:
             url = self.base_url + video
+            self.driver.get(url)
+            sleep(10)
+            self.logger.info('Sleeping for 10 seconds.')
             yield Request(url, callback=self.parse_trendings)
         
         # while True:
@@ -59,9 +64,42 @@ class TrendingSpider(Spider):
     def parse_trendings(self, response):
         sel = Selector(text=self.driver.page_source)
         video_name = sel.xpath('//yt-formatted-string/text()').extract_first()
+        video_channel_name = sel.xpath('//ytd-channel-name/div/div/yt-formatted-string/a/text()').extract_first()
+        video_url = self.driver.current_url
 
-        yield {"video_name": video_name}
+        likes = sel.xpath('//like-button-view-model/toggle-button-view-model/button-view-model/button[@aria-label]/text()').extract_first()
+        ## extract likes
+        likes = utils.extractNumber(likes)
+        
+        others = sel.xpath('//ytd-watch-info-text/tp-yt-paper-tooltip/div/text()').extract_first().split()
+        views = int(others[0])
+        
+        dt_fmt = "%d de %b. de %Y"
+        dt_str = ' '.join(others[3:8])
+        upload_time = utils.extractDate(dt_str, dt_fmt)
+
+        rank_trend = others[9]
+        
+        comments = sel.xpath('//div/h2[contains(@aria-label, "Com")]/@aria-label').extract_first()
+        ## extract comments
+        comments = utils.extractNumber(comments)
+
+        sleep(5)
+        self.logger.info('Sleeping for 5 seconds.')
+
+        yield {
+            "video_name": video_name,
+            "video_channel_name": video_channel_name,
+            "video_url": video_url,
+            "rank_trend": rank_trend,
+            "likes": likes,
+            "views": views,
+            "comments": comments,
+            "upload_time": upload_time
+        }
     
+    def parse(self, response):
+        pass
     
     # def parse(self, response):
     #     l = ItemLoader(item=YoutubeTrendingItem(), response=response)
