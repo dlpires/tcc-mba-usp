@@ -23,25 +23,30 @@ class TrendingSpider(Spider):
     allowed_domains = ["www.youtube.com","youtube.com"]
     start_urls = ["https://www.youtube.com/feed/trending"]
     base_url = "https://www.youtube.com"
+    remove_strings = ['Transmitido','ao','vivo','em']
     
     def start_requests(self) -> Iterable[Request]:
-        self.driver = webdriver.Firefox()
-        sleep(10)
+        ## SET PROFILE LANGUAGE PT-BR IN BROWSER
+        options = webdriver.FirefoxOptions()
+        options.set_preference('intl.accept_languages', 'pt-BR, pt')
+
+        self.driver = webdriver.Firefox(options=options)
+        self.logger.info('Sleeping for 5 seconds.')
+        sleep(5)
         self.driver.get(self.start_urls[0])
 
         sel = Selector(text=self.driver.page_source)
-        sleep(3)
         self.logger.info('Sleeping for 3 seconds.')
+        sleep(3)
         videos = sel.xpath('//a[@id="thumbnail"]/@href').extract()
 
         # yield {"videos": videos}
 
         for video in videos:
             url = self.base_url + video
-            self.driver.get(url)
-            sleep(10)
-            self.logger.info('Sleeping for 10 seconds.')
-            yield Request(url, callback=self.parse_trendings)
+            # EXCLUDING SHORTS
+            if ("shorts" not in url):
+                yield Request(url, callback=self.parse_trendings)
         
         # while True:
         #     try:
@@ -62,17 +67,26 @@ class TrendingSpider(Spider):
         #         break
 
     def parse_trendings(self, response):
+        self.driver.get(response.request.url)
+        self.logger.info('Sleeping for 5 seconds.')
+        sleep(5)
         sel = Selector(text=self.driver.page_source)
+        self.logger.info('Sleeping for 3 seconds.')
+        sleep(3)
         video_name = sel.xpath('//yt-formatted-string/text()').extract_first()
         video_channel_name = sel.xpath('//ytd-channel-name/div/div/yt-formatted-string/a/text()').extract_first()
         video_url = self.driver.current_url
 
-        likes = sel.xpath('//like-button-view-model/toggle-button-view-model/button-view-model/button[@aria-label]/text()').extract_first()
+        likes = sel.xpath('//like-button-view-model/toggle-button-view-model/button-view-model/button/@aria-label').extract_first()
         ## extract likes
         likes = utils.extractNumber(likes)
         
         others = sel.xpath('//ytd-watch-info-text/tp-yt-paper-tooltip/div/text()').extract_first().split()
-        views = int(others[0])
+        ## REMOVE UNECESSARY VALUES
+        if (True in [y in others for y in self.remove_strings]):
+            [others.remove(x) for x in self.remove_strings]
+        
+        views = utils.extractNumber(others[0])
         
         dt_fmt = "%d de %b. de %Y"
         dt_str = ' '.join(others[3:8])
@@ -84,8 +98,8 @@ class TrendingSpider(Spider):
         ## extract comments
         comments = utils.extractNumber(comments)
 
-        sleep(5)
         self.logger.info('Sleeping for 5 seconds.')
+        sleep(5)
 
         yield {
             "video_name": video_name,
