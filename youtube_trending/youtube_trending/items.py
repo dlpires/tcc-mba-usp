@@ -14,5 +14,5 @@ class YoutubeTrendingItem(scrapy.Item):
     likes = scrapy.Field()
     views = scrapy.Field()
     comments = scrapy.Field()
-    upload_time = scrapy.Field()
+    ranking_date = scrapy.Field()
     rank_trend = scrapy.Field()
