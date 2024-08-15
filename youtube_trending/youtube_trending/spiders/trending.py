@@ -7,13 +7,10 @@ import youtube_trending.shared.utils as utils
 
 # SELENIUM
 from time import sleep
-from typing import Any, Iterable
+from typing import Iterable
 from scrapy.selector import Selector
 from scrapy.http import Request
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver import ActionChains
-from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
 from selenium.common.exceptions import TimeoutException, WebDriverException
 
 ##
@@ -27,11 +24,14 @@ class TrendingSpider(Spider):
     
     def start_requests(self) -> Iterable[Request]:
         ## SET PROFILE LANGUAGE PT-BR IN BROWSER
+        remote_server = "http://localhost:4444"
         options = webdriver.FirefoxOptions()
         options.set_preference('intl.accept_languages', 'pt-BR, pt')
 
         try:
-            self.driver = webdriver.Firefox(options=options)
+            #self.driver = webdriver.Firefox(options=options)
+            ## CONNECT TO WEBDRIVER REMOTE
+            self.driver = webdriver.Remote(command_executor=remote_server, options=options)
             self.logger.info('Sleeping for 5 seconds.')
             sleep(5)
             self.driver.get(self.start_urls[0])
@@ -100,17 +100,6 @@ class TrendingSpider(Spider):
             comments = utils.extractNumber(comments_tmp)
         else:
             comments = None
-
-        # yield {
-        #     "video_name": video_name,
-        #     "video_channel_name": video_channel_name,
-        #     "video_url": video_url,
-        #     "rank_trend": rank_trend,
-        #     "likes": likes,
-        #     "views": views,
-        #     "comments": comments,
-        #     "ranking_date": ranking_date
-        # }
 
         l.add_value('video_name', video_name)
         l.add_value('video_channel_name', video_channel_name)
