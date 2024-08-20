@@ -8,5 +8,4 @@ import scrapy
 
 class YoutubeChannelsItem(scrapy.Item):
     # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+    channel_name = scrapy.Field()
