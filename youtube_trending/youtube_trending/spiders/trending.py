@@ -1,3 +1,4 @@
+from time import sleep
 from scrapy import Spider
 from scrapy.loader import ItemLoader
 import os
@@ -6,7 +7,6 @@ import json
 import youtube_trending.shared.utils as utils
 
 # SELENIUM
-from time import sleep
 from typing import Iterable
 from scrapy.selector import Selector
 from scrapy.http import Request
@@ -93,7 +93,7 @@ class TrendingSpider(Spider):
                 break
             else:
                 rank_trend = None
-        
+
         comments_tmp = sel.xpath('//yt-formatted-string[contains(@class, "ytd-comments-header-renderer")]/span/text()').extract_first()
         
         if (comments_tmp != None):

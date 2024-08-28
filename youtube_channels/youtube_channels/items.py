@@ -8,5 +8,13 @@ import scrapy
 
 class YoutubeChannelsItem(scrapy.Item):
     # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+    channel_name = scrapy.Field()
+    channel_account = scrapy.Field()
+    channel_url = scrapy.Field()
+    subscribers = scrapy.Field()
+    num_videos = scrapy.Field()
+    num_views = scrapy.Field()
+    last_avg_likes = scrapy.Field() # LAST videos average likes
+    last_avg_views = scrapy.Field() # LAST videos average views
+    last_avg_comments = scrapy.Field() # LAST videos average comments
+    keywords = scrapy.Field()
