@@ -14,7 +14,7 @@ class YoutubeChannelsItem(scrapy.Item):
     subscribers = scrapy.Field()
     num_videos = scrapy.Field()
     num_views = scrapy.Field()
-    l15_avg_likes = scrapy.Field() # LAST 15 videos average likes
-    l15_avg_views = scrapy.Field() # LAST 15 videos average views
-    l15_avg_comments = scrapy.Field() # LAST 15 videos average comments
+    last_avg_likes = scrapy.Field() # LAST videos average likes
+    last_avg_views = scrapy.Field() # LAST videos average views
+    last_avg_comments = scrapy.Field() # LAST videos average comments
     keywords = scrapy.Field()

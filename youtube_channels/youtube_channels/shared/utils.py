@@ -10,7 +10,7 @@ import unicodedata
 
 ## EXTRACT NUMBER FROM STRING (until billion)
 def extractNumber(caracter, text):
-    value = int(re.findall(r'\d+', text.replace(caracter, '').lower())[0])
+    value = int(re.findall(r'\d+', text.replace(caracter, '').lower())[0]) if any(list(map(isDigit, text))) else 0
     if 'mil' in text:
         value = value * 1000
     elif 'mi' in text:
@@ -23,3 +23,6 @@ def extractNumber(caracter, text):
 ## NORMALIZE UNICODE STRINGS
 def normalizeString(text):
     return unicodedata.normalize('NFKD', text)
+
+def isDigit(ch):
+    return ch.isdigit()
