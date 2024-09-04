@@ -75,6 +75,8 @@ class TrendingSpider(Spider):
         
         video_name = sel.xpath('//yt-formatted-string/text()').extract_first()
         video_channel_name = sel.xpath('//ytd-channel-name/div/div/yt-formatted-string/a/text()').extract_first()
+        ch_ac_temp = sel.xpath('//yt-formatted-string/a/@href').extract_first()
+        video_channel_account = ch_ac_temp.split('/')[1] if ch_ac_temp.split('/')[1] != 'channel' else None
         video_url = self.driver.current_url
 
         likes = sel.xpath('//like-button-view-model/toggle-button-view-model/button-view-model/button/@aria-label').extract_first()
@@ -101,14 +103,29 @@ class TrendingSpider(Spider):
         else:
             comments = None
 
+        ## GET KEYWORDS CHANNEL
+        self.driver.get(self.base_url + ch_ac_temp)
+        self.logger.info('Sleeping for 3 seconds.')
+        sleep(3)
+
+        sel = Selector(text=self.driver.page_source)
+        
+        ## IF CHANNEL ACCOUNT VARIABLE RECEIVE NONE (NOT HAVE ACCOUNT INFO), GET INFO IN CHANNEL
+        if not video_channel_account:
+            video_channel_account = sel.xpath('//yt-content-metadata-view-model/div/span/text()').extract_first()
+
+        keywords = sel.xpath('//meta[@property="og:video:tag"]/@content').extract()
+
         l.add_value('video_name', video_name)
         l.add_value('video_channel_name', video_channel_name)
+        l.add_value('video_channel_account', video_channel_account)
         l.add_value('video_url', video_url)
         l.add_value('rank_trend', rank_trend)
         l.add_value('likes', likes)
         l.add_value('views', views)
         l.add_value('comments', comments)
         l.add_value('ranking_date', ranking_date)
+        l.add_value('keywords', keywords)
 
         yield l.load_item()
 
