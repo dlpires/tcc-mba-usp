@@ -197,5 +197,5 @@ class GoogleSpider(scrapy.Spider):
     def close(self, reason):
         ## CLOSE WEB BROWSER
         self.driver.quit()
-        json_file = max(glob.iglob('*.json'), key=os.path.getctime)
-        os.rename(json_file, "trendings.json")
+        # json_file = max(glob.iglob('*.json'), key=os.path.getctime)
+        # os.rename(json_file, "trendings.json")

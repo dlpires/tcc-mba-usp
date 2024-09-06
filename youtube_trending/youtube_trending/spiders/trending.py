@@ -50,9 +50,9 @@ class TrendingSpider(Spider):
             self.logger.info('TimeoutException: ', timeouterr)
         except WebDriverException as webdrivererr:
             self.logger.info('WebDriverException: ', webdrivererr)
-        finally:
-            ## CLOSE WEB BROWSER
-            self.driver.quit()
+        # finally:
+        #     ## CLOSE WEB BROWSER
+        #     self.driver.quit()
 
     def parse_trendings(self, response):
         l = ItemLoader(item=YoutubeTrendingItem(), response=response)
@@ -130,5 +130,7 @@ class TrendingSpider(Spider):
         yield l.load_item()
 
     def close(self, reason):
-        json_file = max(glob.iglob('*.json'), key=os.path.getctime)
-        os.rename(json_file, "trendings.json")
+        ## CLOSE WEB BROWSER
+        self.driver.quit()
+        # json_file = max(glob.iglob('*.json'), key=os.path.getctime)
+        # os.rename(json_file, "trendings.json")
