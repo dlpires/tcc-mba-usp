@@ -5,6 +5,7 @@ import os
 import glob
 from statistics import mean
 from youtube_channels.shared import utils
+from youtube_channels.trendings import trendings_search as ts
 
 ## SELENIUM
 from selenium import webdriver
@@ -22,9 +23,10 @@ class GoogleSpider(scrapy.Spider):
     name = "google"
     allowed_domains = ["www.google.com", "google.com", "www.youtube.com", "youtube.com"]
     start_urls = ["https://www.google.com", "https://www.youtube.com"]
-    search_key = 'brasileirão 2024 canais youtube'
+    search_key = 'brasileirão'
     num_results = 10
     num_last_videos = 20
+    channel_videos_path = '/videos'
 
 
     def start_requests(self) -> Iterable[Request]:
@@ -70,18 +72,25 @@ class GoogleSpider(scrapy.Spider):
                 ch = ch.lower()
 
                 ## IF /VIDEOS are included, it's ready!
-                if '/videos' not in ch:
+                if self.channel_videos_path not in ch:
                     ## CHECK LAST SUBSTRING IN STRING, IF IS THE CHANNEL NAME, INCLUDING /VIDEOS IN LINK 
                     if '@' in ch.split('/')[-1]:
-                        result = ch+'/videos'
+                        result = ch+self.channel_videos_path
                     else:
-                        result = ch.replace('/'+ch.split('/')[-1],'/videos')
+                        result = ch.replace('/'+ch.split('/')[-1],self.channel_videos_path)
                 else:
                     result = ch
                 
                 ## IF ALREADY EXISTS, NOT INCLUDING IN ARRAY
                 if [s for s in channels_fmt if ch.split('/')[3] in s] == []:
                     channels_fmt.append(result)
+
+            ## including channels in trendings json
+            channels_accounts = ts.filterMatchChannels(self.search_key)
+            for channel in channels_accounts:
+                ## IF ALREADY EXISTS, NOT INCLUDING IN ARRAY
+                if [s for s in channels_fmt if channel in s] == []:
+                    channels_fmt.append(self.start_urls[1] + '/' + channel + self.channel_videos_path)
 
             # ACCESS CHANNELS TO PARSE
             for ch_url in channels_fmt:
@@ -197,5 +206,5 @@ class GoogleSpider(scrapy.Spider):
     def close(self, reason):
         ## CLOSE WEB BROWSER
         self.driver.quit()
-        # json_file = max(glob.iglob('*.json'), key=os.path.getctime)
-        # os.rename(json_file, "trendings.json")
+        #json_file = glob.iglob('*.json'), key=os.path.getctime
+        #os.rename(json_file, "trendings.json")
