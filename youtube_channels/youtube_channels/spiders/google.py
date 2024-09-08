@@ -22,9 +22,9 @@ class GoogleSpider(scrapy.Spider):
     name = "google"
     allowed_domains = ["www.google.com", "google.com", "www.youtube.com", "youtube.com"]
     start_urls = ["https://www.google.com", "https://www.youtube.com"]
-    search_key = 'Channels with one billion video views'
+    search_key = 'brasileirão 2024 canais youtube'
     num_results = 10
-    num_last_videos = 15
+    num_last_videos = 20
 
 
     def start_requests(self) -> Iterable[Request]:
@@ -197,5 +197,5 @@ class GoogleSpider(scrapy.Spider):
     def close(self, reason):
         ## CLOSE WEB BROWSER
         self.driver.quit()
-        json_file = max(glob.iglob('*.json'), key=os.path.getctime)
-        os.rename(json_file, "trendings.json")
+        # json_file = max(glob.iglob('*.json'), key=os.path.getctime)
+        # os.rename(json_file, "trendings.json")
