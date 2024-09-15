@@ -23,8 +23,8 @@ class GoogleSpider(scrapy.Spider):
     name = "google"
     allowed_domains = ["www.google.com", "google.com", "www.youtube.com", "youtube.com"]
     start_urls = ["https://www.google.com", "https://www.youtube.com"]
-    search_key = 'game'
-    num_results = 20
+    search_key = 'brasileirão'
+    num_results = 10
     num_last_videos = 20
     channel_videos_path = '/videos'
 
